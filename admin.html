@@ -226,36 +226,13 @@ function closeModal(id){document.getElementById(id).classList.remove("show");}
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.style.display="block";clearTimeout(window._to);window._to=setTimeout(()=>t.style.display="none",3500);}
 
 function printRequest(id){
-  const x=rows.find(r=>r.requestId===id); if(!x)return;
-  const d=String(x.date).split("-");
-  const months=["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
-  const day=Number(d[2]), month=months[Number(d[1])-1], year=Number(d[0])+543;
-  const w=window.open("","_blank");
-  w.document.write(`<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><title>${esc(x.requestId)}</title>
-  <style>
-  @page{size:A4;margin:13mm 16mm} *{box-sizing:border-box} body{font-family:"TH Sarabun PSK","TH Sarabun New",serif;font-size:16pt;line-height:1.23;color:#000;margin:0} .page{width:100%} h1{font-size:20pt;text-align:center;margin:0 0 7mm;font-weight:bold} p{margin:0 0 3mm} .right{text-align:right} .line{border-bottom:1px dotted #000;display:inline-block;min-width:220px;padding:0 4px;text-align:center} .wide{min-width:510px;text-align:left} .sign{margin-top:7mm;text-align:center;margin-left:52%} .comments{display:grid;grid-template-columns:1fr 1fr;gap:16mm;margin-top:8mm} .comment{text-align:center} .blank{height:12mm;border-bottom:1px dotted #000} .mayor{width:48%;margin-left:auto;text-align:center;margin-top:5mm} .check{display:flex;justify-content:center;gap:18mm;margin:3mm 0} .foot{position:fixed;bottom:5mm;left:16mm;right:16mm;text-align:center;font-size:11pt;color:#555;border-top:1px solid #aaa;padding-top:2mm} @media print{button{display:none}}
-  </style></head><body><div class="page">
-  <h1>ใบขออนุญาตใช้รถยนต์ส่วนกลาง</h1>
-  <p class="right">วันที่ <span class="line" style="min-width:45px">${day}</span> เดือน <span class="line" style="min-width:125px">${month}</span> พ.ศ. <span class="line" style="min-width:65px">${year}</span></p>
-  <p>เรียน นายกเทศมนตรีตำบลบ้านแป้น</p>
-  <p>ข้าพเจ้า <span class="line" style="min-width:260px">${esc(x.name)}</span> ตำแหน่ง <span class="line" style="min-width:235px">${esc(x.position)}</span></p>
-  <p>สังกัด <span class="line wide">${esc(x.department)}</span></p>
-  <p>ขออนุญาตใช้รถ (ไปไหน) <span class="line" style="min-width:430px;text-align:left">${esc(x.destination)}</span></p>
-  <p>เพื่อ <span class="line" style="min-width:565px;text-align:left">${esc(x.purpose)}</span></p>
-  <p>โดยขออนุมัติให้ นายพงษ์ศักดิ์ มโนพฤกษ์ ทำหน้าที่พนักงานขับรถยนต์โดยใช้รถยนต์ส่วนกลาง</p>
-  <p>เลขทะเบียน <span class="line" style="min-width:105px">นข 2120</span> ผู้โดยสารจำนวน <span class="line" style="min-width:55px">${esc(x.passengers)}</span> คน ในวันที่ <span class="line" style="min-width:45px">${day}</span> เดือน <span class="line" style="min-width:110px">${month}</span> พ.ศ. <span class="line" style="min-width:60px">${year}</span></p>
-  <p>เวลา <span class="line" style="min-width:165px">${esc(x.start)} – ${esc(x.end)}</span> น.</p>
-  <div class="sign">ลงชื่อ <span class="line" style="min-width:190px"></span> ผู้ขออนุญาต</div>
+  const url =
+    SCRIPT_URL +
+    "?page=print" +
+    "&id=" + encodeURIComponent(id) +
+    "&key=" + encodeURIComponent(ADMIN_KEY);
 
-  <div class="comments">
-    <div class="comment"><strong>ความเห็นของหัวหน้าฝ่ายอำนวยการ</strong><div class="blank"></div><p>ลงชื่อ <span class="line" style="min-width:165px"></span></p><p>(นางสาวรุ่งนภา เกียรติปรีชากุล)</p><p>หัวหน้าฝ่ายอำนวยการ</p></div>
-    <div class="comment"><strong>ความเห็นของหัวหน้าสำนักปลัดเทศบาล</strong><div class="blank"></div><p>ลงชื่อ <span class="line" style="min-width:165px"></span></p><p>(นางสาวอรพินธ์ แสงหงษ์)</p><p>หัวหน้าสำนักปลัดเทศบาล</p></div>
-  </div>
-  <div style="width:48%;text-align:center;margin-top:5mm"><strong>ความเห็นของปลัดเทศบาล</strong><div class="blank"></div><p>ลงชื่อ <span class="line" style="min-width:165px"></span></p><p>(นางพิมพ์นารา ภูวดลรุ่งเรือง)</p><p>รองปลัดเทศบาล รักษาราชการแทน</p><p>ปลัดเทศบาลตำบลบ้านแป้น</p></div>
-  <div class="mayor"><strong>ความเห็นของนายกเทศมนตรีตำบลบ้านแป้น</strong><div class="check"><span>☐ อนุญาต</span><span>☐ ไม่อนุญาต</span></div><p>ลงชื่อ <span class="line" style="min-width:165px"></span></p><p>(นายรังสรรค์ ยะสง่า)</p><p>รองนายกเทศมนตรี ปฏิบัติราชการแทน</p><p>นายกเทศมนตรีตำบลบ้านแป้น</p></div>
-  <div class="foot">ระบบสารสนเทศสำนักปลัดเทศบาลตำบลบ้านแป้น · Ban Paen Municipality Vehicle Booking System</div>
-  </div><script>window.onload=()=>setTimeout(()=>window.print(),250);<\/script></body></html>`);
-  w.document.close();
+  window.open(url, "_blank");
 }
 if(ADMIN_KEY)loadAdmin();
 </script>
