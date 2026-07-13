@@ -62,7 +62,7 @@
       position:absolute;
       right:-40px;
       bottom:-58px;
-      width:min(520px,50vw);
+      width:min(650px,58vw);
       opacity:.12;
       filter:drop-shadow(0 30px 30px rgba(0,0,0,.25));
     }
@@ -257,12 +257,22 @@
 
     .section-sub { color:var(--muted); font-size:12px; margin-top:4px; }
 
-    .vehicle-card {
+    .vehicle-list {
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:14px;
       padding:22px;
+    }
+
+    .vehicle-card {
+      padding:18px;
       display:grid;
       grid-template-columns:1fr auto;
-      gap:18px;
+      gap:14px;
       align-items:center;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:linear-gradient(180deg,#FFFFFF,#F8FBFF);
     }
 
     .vehicle-main {
@@ -516,6 +526,7 @@
       .hero-btn { justify-content:center; padding:10px 12px; font-size:13px; }
       .stats { gap:10px; }
       .stat { padding:15px; }
+      .vehicle-list { grid-template-columns:1fr; padding:16px; }
       .vehicle-card { grid-template-columns:1fr; }
       .status { justify-self:start; }
       .form-grid { grid-template-columns:1fr; padding:16px; }
@@ -529,14 +540,22 @@
 </head>
 <body>
   <header class="hero">
-    <svg class="van-bg" viewBox="0 0 700 360" aria-hidden="true">
-      <g fill="none" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M120 240h420c28 0 50-22 50-50v-74c0-22-14-41-35-48l-98-32H233c-31 0-59 17-73 45l-40 80z"/>
-        <path d="M206 78h118v84H164"/>
-        <path d="M344 78h104l86 84H344z"/>
-        <path d="M120 212h470"/>
-        <circle cx="210" cy="245" r="38"/>
-        <circle cx="495" cy="245" r="38"/>
+    <svg class="van-bg" viewBox="0 0 900 360" aria-hidden="true">
+      <g fill="none" stroke="white" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+        <!-- รถตู้ -->
+        <path d="M70 232h330c25 0 44-19 44-44v-70c0-20-13-37-32-43l-78-26H178c-28 0-52 15-64 40l-44 91z"/>
+        <path d="M170 86h92v82H126"/>
+        <path d="M282 86h75l68 82H282z"/>
+        <path d="M70 207h374"/>
+        <circle cx="165" cy="235" r="34"/>
+        <circle cx="350" cy="235" r="34"/>
+        <!-- รถกระบะ -->
+        <path d="M500 220h318c20 0 36-16 36-36v-48c0-18-12-34-29-40l-76-27h-92c-23 0-43 13-54 33l-27 50h-76z"/>
+        <path d="M654 84h82l72 68H654z"/>
+        <path d="M500 152h104"/>
+        <path d="M500 190h354"/>
+        <circle cx="610" cy="224" r="32"/>
+        <circle cx="790" cy="224" r="32"/>
       </g>
     </svg>
 
@@ -561,11 +580,11 @@
           ตรวจสอบวันว่าง ดูรายละเอียดการจอง และส่งคำขอใช้รถส่วนกลางได้จากทั้งคอมพิวเตอร์และสมาร์ทโฟน
         </div>
         <div class="vehicle-pill">
-          <div class="title">🚐 รถตู้ส่วนกลาง</div>
+          <div class="title">🚐 🛻 รถส่วนกลาง 2 คัน</div>
           <div class="meta">
-            <span class="chip">ทะเบียน นข 2120</span>
-            <span class="chip">10 ที่นั่ง</span>
-            <span class="chip">พร้อมใช้งาน</span>
+            <span class="chip">รถตู้ นข 2120</span>
+            <span class="chip">รถกระบะ กข 5916</span>
+            <span class="chip">พร้อมให้บริการ</span>
           </div>
         </div>
       </div>
@@ -574,9 +593,9 @@
 
   <main class="wrap">
     <section class="stats">
-      <div class="stat"><div class="stat-icon">🚐</div><div class="stat-num">1</div><div class="stat-label">รถส่วนกลางทั้งหมด</div></div>
+      <div class="stat"><div class="stat-icon">🚐</div><div class="stat-num">2</div><div class="stat-label">รถส่วนกลางทั้งหมด</div></div>
       <div class="stat"><div class="stat-icon">📅</div><div class="stat-num" id="todayCount">0</div><div class="stat-label">การจองวันนี้</div></div>
-      <div class="stat"><div class="stat-icon">✅</div><div class="stat-num">1</div><div class="stat-label">รถพร้อมใช้งาน</div></div>
+      <div class="stat"><div class="stat-icon">✅</div><div class="stat-num">2</div><div class="stat-label">รถพร้อมใช้งาน</div></div>
       <div class="stat"><div class="stat-icon">⏳</div><div class="stat-num">0</div><div class="stat-label">รออนุมัติ</div></div>
     </section>
 
@@ -587,19 +606,35 @@
           <div class="section-sub">ข้อมูลรถส่วนกลางของสำนักปลัด</div>
         </div>
       </div>
-      <div class="vehicle-card">
-        <div class="vehicle-main">
-          <div class="vehicle-icon">🚐</div>
-          <div>
-            <div class="vehicle-name">รถตู้ส่วนกลาง</div>
-            <div class="vehicle-detail">
-              <span>ทะเบียน <strong>นข 2120</strong></span>
-              <span>จำนวน <strong>10 ที่นั่ง</strong></span>
-              <span>สำนักปลัดเทศบาลตำบลบ้านแป้น</span>
+      <div class="vehicle-list">
+        <div class="vehicle-card">
+          <div class="vehicle-main">
+            <div class="vehicle-icon">🚐</div>
+            <div>
+              <div class="vehicle-name">รถตู้ส่วนกลาง</div>
+              <div class="vehicle-detail">
+                <span>ทะเบียน <strong>นข 2120</strong></span>
+                <span>จำนวน <strong>10 ที่นั่ง</strong></span>
+                <span>คนขับ <strong>นายพงษ์ศักดิ์ มโนพฤกษ์</strong></span>
+              </div>
             </div>
           </div>
+          <div class="status">● พร้อมใช้งาน</div>
         </div>
-        <div class="status">● ว่างอยู่</div>
+        <div class="vehicle-card">
+          <div class="vehicle-main">
+            <div class="vehicle-icon">🛻</div>
+            <div>
+              <div class="vehicle-name">รถกระบะส่วนกลาง</div>
+              <div class="vehicle-detail">
+                <span>ทะเบียน <strong>กข 5916</strong></span>
+                <span>จำนวน <strong>5 ที่นั่ง</strong></span>
+                <span>คนขับ <strong>นายประเสริฐ มณีวรรณ</strong></span>
+              </div>
+            </div>
+          </div>
+          <div class="status">● พร้อมใช้งาน</div>
+        </div>
       </div>
     </section>
 
@@ -713,8 +748,17 @@
         </div>
 
         <div class="field">
-          <label>รถที่ขอใช้</label>
-          <input value="รถตู้ส่วนกลาง นข 2120" readonly>
+          <label>รถที่ขอใช้ *</label>
+          <select id="vehicle" required>
+            <option value="">-- เลือกรถส่วนกลาง --</option>
+            <option value="นข 2120">🚐 รถตู้ส่วนกลาง · นข 2120 · นายพงษ์ศักดิ์ มโนพฤกษ์</option>
+            <option value="กข 5916">🛻 รถกระบะส่วนกลาง · กข 5916 · นายประเสริฐ มณีวรรณ</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>พนักงานขับรถ</label>
+          <input id="driverDisplay" value="เลือกประเภทรถเพื่อแสดงชื่อคนขับ" readonly>
         </div>
 
         <div class="field full">
@@ -733,7 +777,7 @@
   <div class="toast" id="toast"></div>
 
   <footer>
-    ระบบจองรถส่วนกลาง · สำนักปลัดเทศบาลตำบลบ้านแป้น · Version 1.0 Prototype
+    ระบบจองรถส่วนกลาง · สำนักปลัดเทศบาลตำบลบ้านแป้น · Version 2.0
   </footer>
 
   <script>
@@ -742,6 +786,15 @@
     let cursor = new Date();
     const today = new Date();
     let bookings = [];
+    const VEHICLES = {
+      "นข 2120": {vehicle:"รถตู้ส่วนกลาง", plate:"นข 2120", driver:"นายพงษ์ศักดิ์ มโนพฤกษ์"},
+      "กข 5916": {vehicle:"รถกระบะส่วนกลาง", plate:"กข 5916", driver:"นายประเสริฐ มณีวรรณ"}
+    };
+    function updateDriverDisplay(){
+      const plate=document.getElementById("vehicle").value;
+      document.getElementById("driverDisplay").value=VEHICLES[plate]?.driver||"เลือกประเภทรถเพื่อแสดงชื่อคนขับ";
+    }
+    document.getElementById("vehicle").addEventListener("change",updateDriverDisplay);
     function pad(n){return String(n).padStart(2,"0");}
     function dateKey(y,m,d){return `${y}-${pad(m+1)}-${pad(d)}`;}
     function escapeHtml(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");}
@@ -755,7 +808,8 @@
       for(let d=1;d<=total;d++){
         const key=dateKey(y,m,d);
         const list=bookings.filter(b=>b.date===key&&b.status!=="rejected"&&b.status!=="deleted");
-        let cls=list.length>1?"busy":list.length===1?"partial":"free";
+        const usedVehicles=new Set(list.map(b=>b.plate||b.vehicle));
+        let cls=usedVehicles.size>=2?"busy":usedVehicles.size===1?"partial":"free";
         const isToday=y===today.getFullYear()&&m===today.getMonth()&&d===today.getDate();
         html+=`<div class="day ${isToday?"today":cls}" data-date="${key}">${d}</div>`;
       }
@@ -768,7 +822,7 @@
       const dt=new Date(key+'T00:00:00'); const thaiDate=`${dt.getDate()} ${monthNames[dt.getMonth()]} ${dt.getFullYear()+543}`;
       const panel=document.getElementById('dayDetail');
       if(!data.length){panel.innerHTML=`<div class="detail-title">วันที่ ${thaiDate}</div><div class="booking-item"><strong>✅ รถว่าง</strong><p>ยังไม่มีรายการจองในวันนี้</p></div>`;return;}
-      panel.innerHTML=`<div class="detail-title">วันที่ ${thaiDate}</div>`+data.map(b=>`<div class="booking-item"><strong>${escapeHtml(b.name)}</strong><p>🏢 ${escapeHtml(b.department||b.dept)}</p><p>⏰ ${escapeHtml(b.start)}–${escapeHtml(b.end)} น.</p><p>📍 ${escapeHtml(b.destination)}</p><p>📝 ${escapeHtml(b.purpose)}</p><p>สถานะ: ${statusText(b.status)}</p></div>`).join('');
+      panel.innerHTML=`<div class="detail-title">วันที่ ${thaiDate}</div>`+data.map(b=>`<div class="booking-item"><strong>${escapeHtml(b.name)}</strong><p>🚘 ${escapeHtml(b.vehicle||"รถส่วนกลาง")} · ${escapeHtml(b.plate||"")}</p><p>👨‍✈️ ${escapeHtml(b.driver||"")}</p><p>🏢 ${escapeHtml(b.department||b.dept)}</p><p>⏰ ${escapeHtml(b.start)}–${escapeHtml(b.end)} น.</p><p>📍 ${escapeHtml(b.destination)}</p><p>📝 ${escapeHtml(b.purpose)}</p><p>สถานะ: ${statusText(b.status)}</p></div>`).join('');
     }
     document.getElementById('prevMonth').onclick=()=>{cursor=new Date(cursor.getFullYear(),cursor.getMonth()-1,1);renderCalendar();};
     document.getElementById('nextMonth').onclick=()=>{cursor=new Date(cursor.getFullYear(),cursor.getMonth()+1,1);renderCalendar();};
@@ -793,11 +847,14 @@
       if(start>=end) return showToast('เวลาสิ้นสุดต้องมากกว่าเวลาออก');
       if(passengers<1||passengers>10) return showToast('จำนวนผู้โดยสารต้องอยู่ระหว่าง 1–10 คน');
       const btn=e.submitter; btn.disabled=true; btn.textContent='กำลังส่งคำขอ...';
-      const payload={action:'booking',name:document.getElementById('name').value.trim(),position:document.getElementById('position').value.trim(),department:document.getElementById('department').value,phone:document.getElementById('phone').value.trim(),date:document.getElementById('date').value,start,end,destination:document.getElementById('destination').value.trim(),purpose:document.getElementById('purpose').value.trim(),passengers,email:document.getElementById('email').value.trim(),note:document.getElementById('note').value.trim(),vehicle:'รถตู้ส่วนกลาง',plate:'นข 2120'};
+      const plate=document.getElementById('vehicle').value;
+      if(!plate) return showToast('กรุณาเลือกรถส่วนกลาง');
+      const selectedVehicle=VEHICLES[plate];
+      const payload={action:'booking',name:document.getElementById('name').value.trim(),position:document.getElementById('position').value.trim(),department:document.getElementById('department').value,phone:document.getElementById('phone').value.trim(),date:document.getElementById('date').value,start,end,destination:document.getElementById('destination').value.trim(),purpose:document.getElementById('purpose').value.trim(),passengers,email:document.getElementById('email').value.trim(),note:document.getElementById('note').value.trim(),vehicle:selectedVehicle.vehicle,plate:selectedVehicle.plate,driver:selectedVehicle.driver};
       try{
         await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});
         showToast('✅ ส่งคำขอใช้รถเรียบร้อยแล้ว'); e.target.reset();
-        document.getElementById('date').value=dateKey(today.getFullYear(),today.getMonth(),today.getDate()); document.getElementById('start').value='08:30'; document.getElementById('end').value='16:30';
+        document.getElementById('date').value=dateKey(today.getFullYear(),today.getMonth(),today.getDate()); document.getElementById('start').value='08:30'; document.getElementById('end').value='16:30'; updateDriverDisplay();
         setTimeout(loadBookings,1800);
       }catch(err){showToast('ส่งข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');}
       finally{btn.disabled=false;btn.textContent='🚐 ส่งคำขอใช้รถส่วนกลาง';}
