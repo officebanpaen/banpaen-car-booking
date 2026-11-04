@@ -487,6 +487,20 @@
 
     .submit:hover { transform:translateY(-1px); }
 
+    .rule-note { grid-column:1/-1; background:#FFF8E1; border:1px solid #F5C451; color:#7A5300; border-radius:13px; padding:11px 14px; font-size:13px; font-weight:600; line-height:1.55; }
+    .slot-info { grid-column:1/-1; border-radius:13px; padding:10px 14px; font-size:13px; line-height:1.6; display:none; }
+    .slot-info.show { display:block; }
+    .slot-info.free { background:#E8F7EE; border:1px solid #9BD8B1; color:#17603A; }
+    .slot-info.busy { background:#FDECEC; border:1px solid #F0A3A3; color:#9B1C1C; }
+    .modal-bg { position:fixed; inset:0; background:rgba(10,25,50,.55); display:none; align-items:center; justify-content:center; z-index:100; padding:16px; }
+    .modal-bg.on { display:flex; }
+    .modal-box { background:#fff; border-radius:20px; max-width:420px; width:100%; padding:22px 20px 18px; box-shadow:0 20px 60px rgba(0,0,0,.3); text-align:center; }
+    .modal-box .m-ico { font-size:40px; line-height:1; }
+    .modal-box h3 { margin:10px 0 6px; font-size:18px; color:#9B1C1C; }
+    .modal-box p { margin:0 0 16px; font-size:14px; line-height:1.65; color:var(--ink); white-space:pre-line; }
+    .modal-box .m-btns { display:flex; gap:8px; flex-direction:column; }
+    .modal-box button { border:0; border-radius:12px; padding:12px; font:inherit; font-weight:700; font-size:15px; cursor:pointer; background:#0E5CC5; color:#fff; }
+    .modal-box button.alt { background:#EAF2FF; color:#0E5CC5; }
     .toast {
       position:fixed;
       right:18px;
@@ -682,6 +696,7 @@
       </div>
 
       <form class="form-grid" id="bookingForm">
+        <div class="rule-note">⚠️ การจองรถส่วนกลางทุกคัน ต้องจองล่วงหน้าอย่างน้อย 24 ชั่วโมงก่อนเดินทาง<br>หากประสงค์จองช่วงเวลาดังกล่าว กรุณาติดต่อเจ้าหน้าที่</div>
         <div class="field">
           <label>ชื่อ–นามสกุล *</label>
           <input id="name" required placeholder="ชื่อผู้ขอใช้รถ">
@@ -732,6 +747,8 @@
           <input id="end" type="time" required value="16:30">
         </div>
 
+        <div class="slot-info" id="slotInfo"></div>
+
         <div class="field full">
           <label>เดินทางไปไหน *</label>
           <input id="destination" required placeholder="ระบุสถานที่หรือจุดหมายปลายทาง">
@@ -773,6 +790,8 @@
       </form>
     </section>
   </main>
+
+  <div class="modal-bg" id="modal"><div class="modal-box"><div class="m-ico" id="mIco">⚠️</div><h3 id="mTitle"></h3><p id="mMsg"></p><div class="m-btns" id="mBtns"></div></div></div>
 
   <div class="toast" id="toast"></div>
 
@@ -840,19 +859,97 @@
       const s=document.createElement('script'); s.id='_car_jsonp'; s.src=`${SCRIPT_URL}?action=list&callback=receiveCarBookings&t=${Date.now()}`;
       s.onerror=()=>showToast('โหลดข้อมูลไม่สำเร็จ กรุณาตรวจสอบ Apps Script'); document.head.appendChild(s);
     }
+    /* ---------- ตรวจเวลาชน / จองล่วงหน้า 24 ชม. ---------- */
+    const ADVANCE_HOURS=24;
+    const CONTACT_MSG="หากประสงค์จองช่วงเวลาดังกล่าว กรุณาติดต่อเจ้าหน้าที่";
+    function toMin(t){const p=String(t||"").split(":");return Number(p[0])*60+Number(p[1]||0);}
+    function fmtMin(m){return pad(Math.floor(m/60))+":"+pad(m%60);}
+    function activeFor(plate,date){return bookings.filter(b=>b.plate===plate&&b.date===date&&(b.status==="pending"||b.status==="approved")).sort((a,b)=>toMin(a.start)-toMin(b.start));}
+    function conflictsFor(plate,date,start,end){return activeFor(plate,date).filter(b=>toMin(start)<toMin(b.end)&&toMin(end)>toMin(b.start));}
+    function nextFree(plate,date,start){
+      const list=activeFor(plate,date);let t=toMin(start),moved=true;
+      while(moved){moved=false;list.forEach(b=>{if(toMin(b.start)<=t&&t<toMin(b.end)){t=toMin(b.end);moved=true;}});}
+      return t;
+    }
+    function tooSoon(date,start){
+      const t=new Date(date+"T"+start+":00");
+      return !isNaN(t)&&(t-new Date())<ADVANCE_HOURS*3600*1000;
+    }
+    function showModal(ico,title,msg,btns){
+      document.getElementById("mIco").textContent=ico;
+      document.getElementById("mTitle").textContent=title;
+      document.getElementById("mMsg").textContent=msg;
+      const box=document.getElementById("mBtns");box.innerHTML="";
+      btns.forEach(b=>{const el=document.createElement("button");el.textContent=b.text;if(b.alt)el.className="alt";el.onclick=()=>{document.getElementById("modal").classList.remove("on");if(b.fn)b.fn();};box.appendChild(el);});
+      document.getElementById("modal").classList.add("on");
+    }
+    function updateSlotInfo(){
+      const plate=document.getElementById("vehicle").value,date=document.getElementById("date").value;
+      const start=document.getElementById("start").value,end=document.getElementById("end").value;
+      const box=document.getElementById("slotInfo");
+      if(!plate||!date){box.className="slot-info";box.innerHTML="";return;}
+      const list=activeFor(plate,date),v=VEHICLES[plate];
+      if(!list.length){box.className="slot-info show free";box.innerHTML=`✅ ${escapeHtml(v.vehicle)} (${escapeHtml(plate)}) ว่างตลอดวันที่เลือก`;return;}
+      const times=list.map(b=>`${escapeHtml(b.start)}–${escapeHtml(b.end)} น.`).join(" , ");
+      const clash=start&&end?conflictsFor(plate,date,start,end):[];
+      if(clash.length){
+        const f=nextFree(plate,date,start);
+        box.className="slot-info show busy";
+        box.innerHTML=`⛔ ช่วงเวลาที่เลือกชนกับผู้อื่น<br>รถคันนี้ไม่ว่างช่วง ${times}`+(f!==toMin(start)?`<br>จองได้ตั้งแต่เวลา ${fmtMin(f)} น. เป็นต้นไป`:"");
+      }else{
+        box.className="slot-info show free";
+        box.innerHTML=`ℹ️ รถคันนี้มีผู้จองแล้วช่วง ${times}<br>ช่วงเวลาที่เลือกว่าง จองได้`;
+      }
+    }
+    ["vehicle","date","start","end"].forEach(id=>document.getElementById(id).addEventListener("change",updateSlotInfo));
+    const _recv=window.receiveCarBookings;
+    window.receiveCarBookings=function(r){_recv(r);updateSlotInfo();};
     document.getElementById('bookingForm').addEventListener('submit',async(e)=>{
       e.preventDefault();
       if(!SCRIPT_URL.startsWith('https://script.google.com/')) return showToast('กรุณาใส่ URL ของ Google Apps Script ก่อน');
       const start=document.getElementById('start').value,end=document.getElementById('end').value,passengers=Number(document.getElementById('passengers').value);
       if(start>=end) return showToast('เวลาสิ้นสุดต้องมากกว่าเวลาออก');
       if(passengers<1||passengers>10) return showToast('จำนวนผู้โดยสารต้องอยู่ระหว่าง 1–10 คน');
-      const btn=e.submitter; btn.disabled=true; btn.textContent='กำลังส่งคำขอ...';
       const plate=document.getElementById('vehicle').value;
       if(!plate) return showToast('กรุณาเลือกรถส่วนกลาง');
+      const dateVal=document.getElementById('date').value;
+      /* แจ้งเตือน (ไม่ล็อก): จองล่วงหน้าไม่ถึง 24 ชั่วโมง */
+      if(tooSoon(dateVal,start)&&!window.__ackSoon){
+        return showModal("⏰","ต้องจองล่วงหน้า 24 ชั่วโมง","การจองรถต้องจองล่วงหน้าอย่างน้อย "+ADVANCE_HOURS+" ชั่วโมงก่อนเดินทาง\n"+CONTACT_MSG,[{text:"รับทราบ และส่งคำขอต่อ",fn:()=>{window.__ackSoon=true;document.getElementById('bookingForm').requestSubmit();}},{text:"ยกเลิก",alt:true}]);
+      }
+      window.__ackSoon=false;
+      /* กฎ 2: ห้ามจองเวลาชนกับรถคันเดียวกัน */
+      const clash=conflictsFor(plate,dateVal,start,end);
+      if(clash.length){
+        const f=nextFree(plate,dateVal,start),v=VEHICLES[plate];
+        const times=activeFor(plate,dateVal).map(b=>b.start+"–"+b.end+" น.").join(" , ");
+        const btns=[];
+        if(f>toMin(start)&&f<toMin(end)) btns.push({text:"ใช้เวลาออก "+fmtMin(f)+" น.",fn:()=>{document.getElementById('start').value=fmtMin(f);updateSlotInfo();}});
+        btns.push({text:"ตกลง",alt:btns.length>0});
+        updateSlotInfo();
+        return showModal("🚫","รถคันนี้ไม่ว่างในช่วงเวลาที่เลือก",v.vehicle+" ทะเบียน "+plate+"\nไม่ว่างช่วง "+times+(f>toMin(start)?"\nจองได้ตั้งแต่เวลา "+fmtMin(f)+" น. เป็นต้นไป":"\nกรุณาเลือกเวลาอื่น"),btns);
+      }
+      const btn=e.submitter||document.querySelector('button.submit'); btn.disabled=true; btn.textContent='กำลังส่งคำขอ...';
       const selectedVehicle=VEHICLES[plate];
       const payload={action:'booking',name:document.getElementById('name').value.trim(),position:document.getElementById('position').value.trim(),department:document.getElementById('department').value,phone:document.getElementById('phone').value.trim(),date:document.getElementById('date').value,start,end,destination:document.getElementById('destination').value.trim(),purpose:document.getElementById('purpose').value.trim(),passengers,email:document.getElementById('email').value.trim(),note:document.getElementById('note').value.trim(),vehicle:selectedVehicle.vehicle,plate:selectedVehicle.plate,driver:selectedVehicle.driver};
       try{
-        await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});
+        let result=null;
+        try{
+          const resp=await fetch(SCRIPT_URL,{method:'POST',credentials:'omit',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});
+          result=await resp.json();
+        }catch(netErr){
+          /* อ่านผลตอบกลับไม่ได้ (คำขออาจถูกส่งไปแล้ว) ห้ามส่งซ้ำ ให้โหลดปฏิทินมาตรวจแทน */
+          result=null;
+        }
+        if(result&&result.ok===false){
+          loadBookings();
+          return showModal("🚫","ไม่สามารถจองได้",String(result.message||"เกิดข้อผิดพลาด"),[{text:"ตกลง"}]);
+        }
+        if(!result){
+          await new Promise(r=>setTimeout(r,2500)); loadBookings(); await new Promise(r=>setTimeout(r,2000));
+          const found=bookings.some(b=>b.plate===plate&&b.date===payload.date&&b.start===start&&b.name===payload.name);
+          if(!found) return showModal("ℹ️","ยังไม่ทราบผลการส่งคำขอ","กรุณาตรวจสอบในปฏิทินว่ามีรายการของท่านหรือไม่ หากไม่พบ กรุณาติดต่อเจ้าหน้าที่",[{text:"ตกลง"}]);
+        }
         showToast('✅ ส่งคำขอใช้รถเรียบร้อยแล้ว'); e.target.reset();
         document.getElementById('date').value=dateKey(today.getFullYear(),today.getMonth(),today.getDate()); document.getElementById('start').value='08:30'; document.getElementById('end').value='16:30'; updateDriverDisplay();
         setTimeout(loadBookings,1800);
